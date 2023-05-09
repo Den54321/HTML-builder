@@ -8,36 +8,41 @@ const pathStyles = path.join(__dirname, 'styles');
 const pachAssets = path.join(__dirname, 'assets');
 
 async function deleteFolder(url){
+try{
     let  obg = await fsPromises.readdir(url, { withFileTypes: true })
-    for(let i = 0; i< obg.length; i++)
+    for(let i = 0; i < obg.length; i++)
     {
-        if(!obg[i].isDirectory){
-            await fsPromises.unlink(path.join(pathProjgect,  obg[i]));
-        }
-        else{
-            deleteFolder(path.join(url, obg[i]));
+        if(!obg[i].isDirectory()){
+          await fsPromises.unlink(path.join(pathProjgect,  obg[i].name));
         }
 
-        await fsPromises.rmdir(url);
+        else{
+            deleteFolder(path.join(url, obg[i].name));
+        }   
     }
 
+    await fsPromises.rmdir(url);
+  }
+  catch(error){
+     console.log('jib,rf')
+  }
+  
 }
 
-async function createFolder(){
- let  urlCreatFolder = await fsPromises.mkdir(pathProjgect, { recursive: true });
-//   if(!urlCreatFolder){
-//     let res = await fsPromises.readdir(pathProjgect);
-    
-//     res.forEach( async item =>{
-    
-//       await fsPromises.unlink(path.join(pathProjgect, item))   
-//     })
+async function createFolder(){ 
+ 
+ try{
+  let  urlCreatFolder = await fsPromises.mkdir(pathProjgect, { recursive: true });
+ }
+ catch{
 
-//   }
+ }
+ 
 
 }
 
 async function bulderHtml(){
+
   let components = await fsPromises.readdir(pathComponent, { withFileTypes: true });
   let companentsData = {};
   components.forEach(async item =>{
@@ -55,7 +60,6 @@ async function bulderHtml(){
   }
   
   await fsPromises.writeFile(path.join(pathProjgect, 'index.html'), innerHtml);
-  bulderCss();
 
 }
 
@@ -80,55 +84,45 @@ async function bulderCss(){
                
 }
 
-async function copyFolder(){
+async function copyFolder(pathCopy, pathInsert){
+   try{
+    let  obg = await fsPromises.readdir(pathCopy, { withFileTypes: true });
+    for(let i = 0; i < obg.length; i++)
+    {
+        if(!obg[i].isDirectory()){
+          let data = await fsPromises.readFile( path.join(pathCopy, obg[i].name));
+          await fsPromises.writeFile(path.join(pathInsert, obg[i].name), data);
+        }
 
-  let  urlCreatFolder = await fsPromises.mkdir(path.join(pathProjgect, assets), { recursive: true });
-  if(!urlCreatFolder){
+        else{
+          await fsPromises.mkdir(path.join(pathInsert, obg[i].name), { recursive: true });
+          copyFolder(path.join(pathCopy, obg[i].name), path.join(pathInsert, obg[i].name));
+        }   
+    }
+   }
 
-    let res = await fsPromises.readdir(path.join(pathProjgect, assets));
-
-    res.forEach( async item =>{
-      await fsPromises.unlink(path.join(path.join(pathProjgect, assets), item))   
-    })
-
-  }
-  
-
-
-
+   catch(error){
+      console.log('error')
+   }
+ 
 }
 
 
+ (async ()=>{
+ await deleteFolder(pathProjgect);
+ await createFolder();
+ copyFolder(pachAssets ,  path.join(pathProjgect, 'assets' ));
+ bulderHtml();
+ bulderCss();
 
- deleteFolder(pathProjgect);
- createFolder();
-bulderHtml();
+ })();
 
 
 
 
 
-// const promisCreatFolder = fsPromises.mkdir(pathProjgect, { recursive: true });
 
-// promisCreatFolder.then(
-//     (url)=>{
-//         if(!url){
-//             fs.readdir(pathProjgect, (err, res)=>{
-//                 res.forEach( item =>{
-//                     fs.unlink(pach.join(pathProjgect, item), (err)=>{})   
-//                 })   
-//               })  
-//         }
 
-//         fs.readFile(path.join(__dirname, 'template.html'),'utf-8', (err, data) => {
-             
-//         })
 
-//     },
-
-//     err=>{
-
-//     }
-// )
 
 
