@@ -9,24 +9,27 @@ const pachAssets = path.join(__dirname, 'assets');
 
 async function deleteFolder(url){
 try{
+
     let  obg = await fsPromises.readdir(url, { withFileTypes: true })
-    for(let i = 0; i < obg.length; i++)
-    {
-        if(!obg[i].isDirectory()){
-          await fsPromises.unlink(path.join(pathProjgect,  obg[i].name));
-        }
+    if(obg.length !== 0){
+        for(let i = 0; i < obg.length; i++)
+      {
+          if(!obg[i].isDirectory()){
+            await fsPromises.unlink(path.join(url,  obg[i].name));
+          }
 
-        else{
-            deleteFolder(path.join(url, obg[i].name));
-        }   
+          else{
+            await deleteFolder(path.join(url, obg[i].name));
+          }   
+      }
     }
+     await fsPromises.rmdir(url);
+  }
 
-    await fsPromises.rmdir(url);
-  }
   catch(error){
-     console.log('jib,rf')
+     
+
   }
-  
 }
 
 async function createFolder(){ 
@@ -109,12 +112,11 @@ async function copyFolder(pathCopy, pathInsert){
 
 
  (async ()=>{
- await deleteFolder(pathProjgect);
- await createFolder();
- copyFolder(pachAssets ,  path.join(pathProjgect, 'assets' ));
- bulderHtml();
- bulderCss();
-
+    await deleteFolder(pathProjgect);
+    await createFolder(); 
+    await bulderHtml();
+    await bulderCss();
+    copyFolder(pachAssets ,  path.join(pathProjgect, 'assets' ));
  })();
 
 
